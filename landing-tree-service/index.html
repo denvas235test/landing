@@ -129,7 +129,7 @@
         <form class="contact-form lp-form" id="contact-form" action="https://formspree.io/f/mqeoakpw" method="POST">
           <input type="hidden" name="form_type" value="landing-tree-service">
           <h2 class="lp-form-title">Pide tu cotización gratis</h2>
-          <p class="lp-form-note">Solo 3 datos y te contactamos por WhatsApp. Sin compromiso.</p>
+          <p class="lp-form-note">Solo 3 datos. Al enviar, se abre WhatsApp con tu mensaje ya escrito. Sin compromiso.</p>
           <div class="form-field">
             <label for="name">Nombre</label>
             <input type="text" id="name" name="name" autocomplete="name" required>
@@ -209,6 +209,33 @@
       });
     }
   });
+
+  // Al enviar el formulario: se guarda el lead (Formspree, vía script.js) y luego se abre WhatsApp con el mensaje ya escrito.
+  (function(){
+    const form = document.getElementById('contact-form');
+    const status = document.getElementById('form-status');
+    if (!form || !status) return;
+    let pendingUrl = null;
+
+    form.addEventListener('submit', function(){
+      const d = new FormData(form);
+      const msg = 'Hola, vi el video de Tree Service y quiero más información.\n\n' +
+                  'Nombre: ' + d.get('name') + '\n' +
+                  'Negocio: ' + d.get('business') + '\n' +
+                  'WhatsApp/Teléfono: ' + d.get('phone');
+      pendingUrl = 'https://wa.me/19177423657?text=' + encodeURIComponent(msg);
+    });
+
+    new MutationObserver(function(){
+      if (!pendingUrl || !status.textContent.trim()) return;
+      const url = pendingUrl;
+      pendingUrl = null;
+      if (status.textContent.indexOf('Gracias') === 0) {
+        status.textContent = 'Listo — abriendo WhatsApp con tu mensaje…';
+      }
+      setTimeout(function(){ window.location.href = url; }, 900);
+    }).observe(status, { childList: true, characterData: true, subtree: true });
+  })();
 
   // script.js vuelve a poner "Enviar mensaje" en el botón después de enviar; aquí se restaura el texto de esta landing.
   (function(){
